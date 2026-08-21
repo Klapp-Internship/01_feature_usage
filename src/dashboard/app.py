@@ -5,6 +5,9 @@ import sys
 from pathlib import Path
 from datetime import  datetime
 
+
+#### TODO: FIX SPLITTING OF INVOICE FOR MOTHER DAUGHTER SCHOOLS
+
 ###### Set path for src import
 projekt_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(projekt_root))
