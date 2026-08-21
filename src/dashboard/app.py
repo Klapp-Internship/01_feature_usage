@@ -99,7 +99,7 @@ with tab1:
     merged_col = pd.Index.union(historie_col, non_relevant_cols)
     overview_col = merged_col.union(removed_cols)
 
-    txt_input = st.text_input(label="Suchfeld",  key="Gesamtübersicht", on_change=helpers.switch_school_tab1)
+    txt_input = st.text_input(label="Suchfeld",  key="Gesamtübersicht")
     filtered = df[df["name"].str.contains(txt_input, case=False)]
     df_cols = filtered[spalten_reihenfolge]
     
@@ -147,7 +147,7 @@ with tab2:
 
 with tab3:
     
-    options = [""] + list(df_cols["name"].unique())
+    options = [""] + list(df["name"].unique())
     selected_school = st.selectbox("Schule suchen", options, key="Schule im Detail", on_change=helpers.switch_school_dropdown)
 
     selected_name = st.session_state.get("selected_name")
@@ -198,7 +198,6 @@ with tab3:
             formatted_currency = f"CHF {name.iloc[0]["anzahl_invoices_historie"]:,.2f}".replace(",", "'")
             st.metric("Rechnungsbetrag (Historie)", formatted_currency)
 
-            
             if hit.empty:
                 pass
             else:
@@ -259,5 +258,5 @@ with tab3:
         agg_bar_chart.update_traces(textposition="outside", textfont_size=16, textangle=0)
         st.write(agg_bar_chart)
 
-        # st.write(df_invoice)
+        st.write(df_invoice)
         # st.write(long_form)
