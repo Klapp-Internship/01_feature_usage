@@ -47,5 +47,5 @@ streamlit run app.py
 
 ## Notes
 
-- Time windows used in aggregations include 30 days, 90 days, and last school year.
+- Time windows used in aggregations include 30 days, 90 days, last school year and the whole history.
 - Output and UI labels are currently German.
