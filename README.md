@@ -45,6 +45,20 @@ From `src/dashboard`:
 streamlit run app.py
 ```
 
+## Sample dashboard images
+
+### Overview
+
+![Overview dashboard](src/dashboard/logo/overview.png)
+
+### Feature view
+
+![Feature view dashboard](src/dashboard/logo/feature_view.png)
+
+### Detailed view
+
+![Detailed view dashboard](src/dashboard/logo/detailed_view.png)
+
 ## Notes
 
 - Time windows used in aggregations include 30 days, 90 days, last school year and the whole history.
