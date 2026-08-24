@@ -345,7 +345,7 @@ money_pipe = [{
     {"$group": {
         "_id": "$price_data.school",
         "anzahl_invoices_historie": {"$sum": "$price_data.amount_invoiced"},
-        **helpers.timeframe_fields("invoices", pipe_dict_date, is_money=True)
+        **helpers.timeframe_fields("invoices", pipe_dict_date, is_money=True, money_field="$price_data.amount_invoiced")
     }},
     {"$lookup": {
         "from": "school",

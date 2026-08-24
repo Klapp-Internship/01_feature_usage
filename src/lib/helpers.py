@@ -24,17 +24,17 @@ def merge_alle(dataframes, on, how):
     return result
 
 
-def timeframe_fields(pre_fix, conditions, is_money=False, add_anzahl_prefix=True):
+def timeframe_fields(pre_fix, conditions, is_money=False, add_anzahl_prefix=True, money_field="$amount"):
     '''Takes prefix and conditions, returns fields for pipeline.py'''
     fields = {}
-    anzahl = "anzahl_" if add_anzahl_prefix else ""
+    anzahl = "anzahl" if add_anzahl_prefix else ""
     if is_money:
         for suffix, condition in conditions.items():
-            fieldname = f"{anzahl}{pre_fix}_{suffix}"
-            fields[fieldname] = {"$sum": {"$cond": [condition, "$amount", 0]}}
+            fieldname = f"{anzahl}_{pre_fix}_{suffix}"
+            fields[fieldname] = {"$sum": {"$cond": [condition, money_field, 0]}}
     else:
         for suffix, condition in conditions.items():
-            fieldname = f"{anzahl}{pre_fix}_{suffix}"
+            fieldname = f"{anzahl}_{pre_fix}_{suffix}"
             fields[fieldname] = {"$sum": {"$cond": [condition, 1, 0]}}
     return fields
 

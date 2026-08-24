@@ -9,16 +9,16 @@ from datetime import  datetime
 #### TODO: FIX SPLITTING OF INVOICE FOR MOTHER DAUGHTER SCHOOLS
 
 ###### Set path for src import
-projekt_root = Path(__file__).resolve().parents[2]
+projekt_root = Path(__file__).resolve().parents[3]
 sys.path.append(str(projekt_root))
 
 from src.lib import helpers
 
-LOGO = "logo/klapp_logo.png"
+LOGO = "../logo/klapp_logo.png"
 
 ###### Read in parquet 
-df = pd.read_parquet("../../data/snapshot.parquet")
-df_invoice = pd.read_json("../../data/mother_daughter.json")
+df = pd.read_parquet("../../../data/snapshot.parquet")
+df_invoice = pd.read_json("../../../data/mother_daughter.json")
 
 
 ##### convert datetimes to only display date to remove redundancy
@@ -196,6 +196,7 @@ with tab3:
 
         with col5:
             #### define hit for the json where id's match
+                    
             hit = df_invoice[df_invoice["_id"] == name.iloc[0]["_id"]]
 
             formatted_currency = f"CHF {name.iloc[0]["anzahl_invoices_historie"]:,.2f}".replace(",", "'")
@@ -258,8 +259,9 @@ with tab3:
                                category_orders={"Zeitraum": right_order},
                                text_auto=True)
         
+        # st.write(long_form[long_form["Feature"] == "anzahl_invoices"])
         agg_bar_chart.update_traces(textposition="outside", textfont_size=16, textangle=0)
         st.write(agg_bar_chart)
 
-        st.write(df_invoice)
+        # st.write(df_invoice)
         # st.write(long_form)
