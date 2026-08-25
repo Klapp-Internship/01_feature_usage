@@ -16,6 +16,10 @@ from src.lib import helpers
 
 LOGO = "../logo/klapp_logo.png"
 
+
+# Set table layout = wide
+st.set_page_config(layout="wide")
+
 ###### Read in parquet 
 df = pd.read_parquet("../../../data/snapshot.parquet")
 df_invoice = pd.read_json("../../../data/mother_daughter.json")
@@ -75,8 +79,7 @@ timeframes = {
 
 with tab1:
 # ##### Creat searchbar for school name and plot overview table
-    # Set table layout = wide
-    st.set_page_config(layout="wide")
+    
 
     #### set up cols for overview widgets
     col1, col2, col3, col4 = st.columns(4)
@@ -97,7 +100,7 @@ with tab1:
     with col4:
         st.metric("Total aktive Eltern", df_no_deleted[df_no_deleted["status"] == "Aktiv"]["anzahl_aktive_eltern"].sum())
 
-    #### set session_state for click to tab 3 redirect
+
     
     merged_col = pd.Index.union(historie_col, non_relevant_cols)
     overview_col = merged_col.union(removed_cols)
@@ -139,14 +142,23 @@ with tab2:
 
     keep_cols = sum_digit_cols.columns.difference(removed_cols)
     filtered_df = sum_digit_cols[keep_cols]
-    
+
     bar_df_filtered = filtered_df.reset_index()
+
     bar_df_filtered = bar_df_filtered.rename(
         columns={"index": "feature", 0: "anzahl"}).sort_values("anzahl", ascending=False)
 
-    fig = px.bar(bar_df_filtered, x="feature", y="anzahl", log_y=True, text_auto="0,.0f")
-    st.plotly_chart(fig)
-    # st.write(bar_df_filtered)
+        #### remove suffixes for better viewing experience
+    for suffix in timeframes.values():
+        # st.write(suffix)
+        bar_df_filtered["feature"] = bar_df_filtered["feature"].str.removesuffix(suffix)
+
+    # st.write(bar_df_filtered["feature"])
+    with st.container(border=True):
+        fig = px.bar(bar_df_filtered, y="feature", x="anzahl", text_auto="0,.0f", orientation="h", log_x=True)
+        fig.update_layout(xaxis_title="anzahl (log)", height=800)
+        st.plotly_chart(fig)
+        # st.write(bar_df_filtered)
 
 with tab3:
     
@@ -171,70 +183,75 @@ with tab3:
             st.error("Nicht Aktiv")
         # st.write(f"DEBUG: selected_name={st.session_state.get('selected_name')}, name ist leer={name.empty}")
         ##### Initialize columns for widgets
-        col1, col2, col3, col4 ,col5 = st.columns(5)
+        
+        with st.container(border=True):
+            col1, col2, col3, col4 ,col5 = st.columns(5)
+            with col1:
+                st.metric("Aktive Lehrer", name.iloc[0]["anzahl_aktive_lehrer"])
 
-        with col1:
-            st.metric("Aktive Lehrer", name.iloc[0]["anzahl_aktive_lehrer"])
+            with col2:
+                st.metric("Aktive Schüler", name.iloc[0]["anzahl_aktive_schüler"])
 
-        with col2:
-            st.metric("Aktive Schüler", name.iloc[0]["anzahl_aktive_schüler"])
+            
 
-        with col3:
-            if pd.isna(name.iloc[0]["kuendigungsstatus"]):
-                st.metric("Kündigungsstatus", "Nicht Gekündigt")
-            else:
-                datum = name.iloc[0]["kuendigungsstatus"]
-                st.metric("Kündigungsdatum", datum.strftime("%d.%m.%Y"))
+            with col3: 
+                if pd.isna(name.iloc[0]["anzahl_aktive_eltern"]):
+                    pass
+                else:
+                    parent_count = name.iloc[0]["anzahl_aktive_eltern"]
+                    st.metric("Aktive Eltern", parent_count)
 
-        with col4: 
-            if pd.isna(name.iloc[0]["loeschstatus"]):
-                pass
-            else:
-                delete_date = name.iloc[0]["loeschstatus"]
-                st.metric("Löschdatum", delete_date.strftime("%d.%m.%Y"))
+            with col4:
+                if pd.isna(name.iloc[0]["kuendigungsstatus"]):
+                    st.metric("Kündigungsstatus", "Nicht Gekündigt")
+                else:
+                    datum = name.iloc[0]["kuendigungsstatus"]
+                    st.metric("Kündigungsdatum", datum.strftime("%d.%m.%Y"))        
 
 
-        with col5:
-            #### define hit for the json where id's match
-                    
-            hit = df_invoice[df_invoice["_id"] == name.iloc[0]["_id"]]
+            with col5:
+                #### define hit for the json where id's match
+                        
+                hit = df_invoice[df_invoice["_id"] == name.iloc[0]["_id"]]
 
-            formatted_currency = f"CHF {name.iloc[0]["anzahl_invoices_historie"]:,.2f}".replace(",", "'")
-            st.metric("Rechnungsbetrag (Historie)", formatted_currency)
+                formatted_currency = f"CHF {name.iloc[0]["anzahl_invoices_historie"]:,.2f}".replace(",", "'")
+                st.metric("Rechnungsbetrag (Historie)", formatted_currency)
 
-            if hit.empty:
-                pass
-            else:
-                school = None
-                if hit.iloc[0]["toechter_details"] is None:
-                   school = st.selectbox("Tochterschule von:", ["", hit.iloc[0]["mother_school_name"]], key="mutter_auswahl", on_change=helpers.switch_school_mutter)
-                else:   
-                    if len(hit["toechter_details"].iloc[0]) == 1:
-                        select = ["", hit.iloc[0]["toechter_details"][0]["name"]]
-                        school = st.selectbox("Mutterschule von: ", select, key="mutter_auswahl", on_change=helpers.switch_school_mutter)
-                    else:
-                        select = [""]
-                        for objekt in hit["toechter_details"].iloc[0]:
-                            select.append(objekt["name"])
-                        school = st.selectbox("Mutterschule von: ", select, key="mutter_auswahl", on_change=helpers.switch_school_mutter)
+                if hit.empty:
+                    pass
+                else:
+                    school = None
+                    if hit.iloc[0]["toechter_details"] is None:
+                        school = st.selectbox("Tochterschule von:", ["", hit.iloc[0]["mother_school_name"]], key="mutter_auswahl", on_change=helpers.switch_school_mutter)
+                    else:   
+                        if len(hit["toechter_details"].iloc[0]) == 1:
+                            select = ["", hit.iloc[0]["toechter_details"][0]["name"]]
+                            school = st.selectbox("Mutterschule von: ", select, key="mutter_auswahl", on_change=helpers.switch_school_mutter)
+                        else:
+                            select = [""]
+                            for objekt in hit["toechter_details"].iloc[0]:
+                                select.append(objekt["name"])
+                            school = st.selectbox("Mutterschule von: ", select, key="mutter_auswahl", on_change=helpers.switch_school_mutter)
 
-                if school:
-                    st.session_state["selected_name"] = school
-                    # st.session_state["mutter_auswahl"] = ""
-                    # st.write(f"DEBUG: school={school}, selected_name vorher={st.session_state.get('selected_name')}")
-                    st.rerun()
+                    if school:
+                        st.session_state["selected_name"] = school
+                        # st.session_state["mutter_auswahl"] = ""
+                        # st.write(f"DEBUG: school={school}, selected_name vorher={st.session_state.get('selected_name')}")
+                        st.rerun()
                     
         # st.write(type(hit.iloc[0]["toechter_details"][0]["name"]))
         # st.dataframe(df_invoice)
-        #### column config for tab2 table to hide non relevant cols
-        cols_to_keep = ["created_at", "joker_tage_aktiviert", "invoicing_start_date", "invoicing_cancellation_date"]
-        cols_to_drop = name.columns.difference(cols_to_keep)
+        
+        with st.expander("Weitere Daten anzeigen"):
+            #### column config for tab2 table to hide non relevant cols
+            cols_to_keep = ["created_at", "loeschstatus", "joker_tage_aktiviert", "invoicing_start_date", "invoicing_cancellation_date"]
+            cols_to_drop = name.columns.difference(cols_to_keep)
 
-        #### dict to hide inrelevant cols
+            #### dict to hide inrelevant cols
 
-        hide_cols = {name: None for name in cols_to_drop}
-
-        st.dataframe(name, hide_index=True, column_config=hide_cols)
+            hide_cols = {name: None for name in cols_to_drop}
+            
+            st.dataframe(name, hide_index=True, column_config=hide_cols)
 
         #### convert data from wide format to long format
         long_list_pattern = "_30_tage|_90_tage|_letztes_schuljahr|_historie"
@@ -246,22 +263,28 @@ with tab3:
 
         long_form[["Feature","Zeitraum"]] = long_form["column"].apply(lambda x: pd.Series(helpers.split_cols(x, suffix_labels=suffix_labels)))
 
-
         #### sort column order
-        right_order = list(suffix_labels.values())
+        right_order_label = list(suffix_labels.values())
 
-        # st.write(long_form)
+        historie_werte = long_form[long_form["Zeitraum"] == "Gesamter Zeitraum"]  # oder wie dein Label heisst
+        sortiert = historie_werte.sort_values("Wert", ascending=False)
+        right_order_bars = list(sortiert["Feature"])
+
         agg_bar_chart = px.bar(long_form, 
-                               x="Feature", 
-                               y = "Wert", 
+                               y="Feature", 
+                               x="Wert", 
                                color="Zeitraum", 
                                barmode="group", 
-                               category_orders={"Zeitraum": right_order},
-                               text_auto=True)
+                               category_orders={"Zeitraum": right_order_label, "Feature": right_order_bars},
+                               text_auto=True,
+                               orientation="h")
         
         # st.write(long_form[long_form["Feature"] == "anzahl_invoices"])
-        agg_bar_chart.update_traces(textposition="outside", textfont_size=16, textangle=0)
-        st.write(agg_bar_chart)
+        agg_bar_chart.update_traces(textposition="outside", textfont_size=9, textangle=0)
+        agg_bar_chart.update_layout(width=1500, height=1300)
+
+        with st.container(border=True):
+            st.plotly_chart(agg_bar_chart)
 
         # st.write(df_invoice)
         # st.write(long_form)
