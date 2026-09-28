@@ -1,0 +1,6 @@
+streamlit>=1.40
+pandas>=2.2
+pyarrow>=15.0
+plotly>=5.20
+pymongo>=4.6
+python-dotenv>=1.0

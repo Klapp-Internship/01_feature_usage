@@ -1,4 +1,14 @@
+# Environment / secrets
 .env
+
+# Data snapshots (real school data, never commit)
+data/
 *.parquet
 *.csv
 *.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

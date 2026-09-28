@@ -1,65 +1,72 @@
-# Feature Usage Analysis
+# Feature Usage Analyse
 
-Data pipeline and Streamlit dashboard for analyzing school-level feature usage from the `klapp-prod` MongoDB database.
+Streamlit-Dashboard zur Analyse der Feature-Nutzung pro Schule, gespeist aus vorberechneten Snapshots der `klapp-prod` MongoDB.
 
-## Suggested repository description
+Für das reine Anzeigen des Dashboards ist **keine** Datenbankverbindung nötig, solange `data/` bereits Snapshots enthält.
 
-Feature usage analytics for schools with MongoDB aggregation pipelines and a Streamlit dashboard.
+## Voraussetzungen
 
-## Repository structure
+- Python 3.10 oder neuer
+- (nur für neue Snapshots) Zugriff auf die Klapp-MongoDB
 
-- `src/lib/pipelines.py` – MongoDB aggregation pipelines per feature and timeframe.
-- `src/lib/helpers.py` – DataFrame merge and pipeline helper utilities.
-- `src/dashboard/snapshot.py` – Extracts data from MongoDB and writes snapshot files.
-- `src/dashboard/app.py` – Streamlit dashboard for overview and per-school analysis.
-- `notebooks/api_analysis.ipynb` – Exploratory notebook.
-
-## Prerequisites
-
-- Python 3.10+
-- Access to the `klapp-prod` MongoDB instance
-- A `.env` file containing:
-
-```env
-mongo_uri=<your_mongodb_connection_string>
-```
-
-## Run data snapshot generation
-
-From the repository root:
+## Installation
 
 ```bash
-python src/dashboard/snapshot.py
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-This generates:
+## App starten
 
-- `data/snapshot.parquet`
-- `data/mother_daughter.json`
-
-## Run the dashboard
-
-From `src/dashboard`:
+Immer aus dem Projekt-Hauptordner starten (die Datenpfade `data/...` sind relativ dazu):
 
 ```bash
 streamlit run app.py
 ```
 
-## Sample dashboard images
+Die App öffnet sich unter <http://localhost:8501>.
 
-### Overview
+## Umgebungsvariablen (.env)
 
-![Overview dashboard](src/dashboard/logo/overview.png)
+Nur nötig, um Snapshots neu zu erzeugen. `.env.example` nach `.env` kopieren und Werte eintragen:
 
-### Feature view
+```bash
+cp .env.example .env
+```
 
-![Feature view dashboard](src/dashboard/logo/feature_view.png)
+Die `.env` enthält Zugangsdaten und ist **nicht** im Repo enthalten.
 
-### Detailed view
+## Snapshot aktualisieren (optional)
 
-![Detailed view dashboard](src/dashboard/logo/detailed_view.png)
+Das Snapshot-Skript schreibt nach `../data/`, muss also aus dem Ordner `lib/` gestartet werden:
 
-## Notes
+```bash
+cd lib
+python Feature_snapshot.py   # -> data/snapshot.parquet, data/mother_daughter.json, data/class_precentage.parquet
+cd ..
+```
 
-- Time windows used in aggregations include 30 days, 90 days, last school year and the whole history.
-- Output and UI labels are currently German.
+## Projektstruktur
+
+```
+app.py                 Einstiegspunkt für Streamlit
+pages/                 Dashboard-Seite (Feature-Usage Analyse)
+lib/                   Pipelines, Helper und Snapshot-Skript
+data/                  Parquet-/JSON-Snapshots (nicht im Repo, siehe .gitignore)
+docs/                  Beispiel-Screenshots (mit Testdaten)
+```
+
+## Beispiel-Screenshots
+
+Screenshots mit Testdaten (`docs/`):
+
+![Gesamtübersicht](docs/overview.png)
+![Feature-Analyse](docs/feature_view.png)
+![Schule im Detail](docs/detailed_view.png)
+
+## Hinweise
+
+- Zeiträume in den Aggregationen: 30 Tage, 90 Tage, letztes Schuljahr, gesamte Historie.
+- `data/` wird nie committet (siehe `.gitignore`) – die Snapshots enthalten echte Schuldaten.
