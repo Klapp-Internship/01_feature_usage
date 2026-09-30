@@ -12,3 +12,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Raw query output (contains production data)
+notebooks/explore.txt
