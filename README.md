@@ -23,8 +23,6 @@ The data comes from precomputed snapshots of the `klapp-prod` MongoDB, so **no d
 - [Running the app](#running-the-app)
 - [Refreshing the snapshot](#refreshing-the-snapshot)
 - [Time windows](#time-windows)
-- [Anonymizing the screenshots](#anonymizing-the-screenshots)
-- [Data protection](#data-protection)
 
 ---
 
