@@ -3,7 +3,7 @@
 A Streamlit dashboard that shows **which Klapp features are used by which schools, and how heavily**: across all schools, per feature, and per individual school.
 The data comes from precomputed snapshots of the `klapp-prod` MongoDB, so **no database connection is needed** just to view the dashboard.
 
-> !IMPORTANT
+> [!IMPORTANT]
 > **All screenshots in this README are anonymized.
 > - **School names** in the table are **blurred**.
 > - The school name in the detail view is replaced with **"Musterschule (anonymisiert)"**.
